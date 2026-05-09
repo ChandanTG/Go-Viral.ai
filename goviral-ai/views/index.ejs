@@ -1,0 +1,191 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+<!-- Three.js Canvas Background -->
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<main>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge gsap-fade">
+        <i class="bi bi-stars"></i>
+        <span>AI-Powered Virality Analysis</span>
+      </div>
+      <h1 class="hero-title gsap-fade">
+        Make Your Content<br>
+        <span class="gradient-text">Go Viral</span>
+      </h1>
+      <p class="hero-subtitle gsap-fade">
+        Upload your content. Our AI engine analyzes virality potential, hook strength,
+        and gives you data-driven strategies to maximize reach.
+      </p>
+      <div class="hero-cta gsap-fade">
+        <a href="/auth/register" class="btn-primary">
+          <i class="bi bi-rocket-takeoff"></i> Start Analyzing Free
+        </a>
+        <a href="#features" class="btn-ghost">
+          <i class="bi bi-play-circle"></i> See How It Works
+        </a>
+      </div>
+      <div class="hero-stats gsap-fade">
+        <div class="stat-item">
+          <span class="stat-num" data-count="98">0</span><span>%</span>
+          <span class="stat-label">Accuracy Rate</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="50">0</span><span>K+</span>
+          <span class="stat-label">Creators</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="10">0</span><span>M+</span>
+          <span class="stat-label">Content Analyzed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Score Card -->
+    <div class="hero-visual gsap-slide-right">
+      <div class="score-card glass-card tilt-card">
+        <div class="score-header">
+          <div class="score-badge viral">🔥 VIRAL</div>
+          <span class="score-platform"><i class="bi bi-instagram"></i> Instagram</span>
+        </div>
+        <div class="score-circle-wrap">
+          <svg class="score-ring" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#scoreGrad)" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="326" stroke-dashoffset="49"
+              transform="rotate(-90 60 60)"/>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#a855f7"/>
+                <stop offset="100%" style="stop-color:#3b82f6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="score-number">85</div>
+        </div>
+        <div class="score-metrics">
+          <div class="metric-row">
+            <span>Hook Strength</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:78%"></div></div>
+            <span>78</span>
+          </div>
+          <div class="metric-row">
+            <span>Engagement</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:82%"></div></div>
+            <span>82</span>
+          </div>
+          <div class="metric-row">
+            <span>Trend Align</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:91%"></div></div>
+            <span>91</span>
+          </div>
+        </div>
+        <div class="score-footer">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Est. Reach: <strong>500K – 2M</strong></span>
+        </div>
+      </div>
+
+      <!-- Floating badges -->
+      <div class="float-badge float-badge-1 glass-card">
+        <i class="bi bi-tiktok" style="color:#ff0050"></i>
+        <span>#1 TikTok Strategy</span>
+      </div>
+      <div class="float-badge float-badge-2 glass-card">
+        <i class="bi bi-lightning-fill" style="color:#f59e0b"></i>
+        <span>Instant Analysis</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features section-pad" id="features">
+    <div class="section-header">
+      <div class="section-tag">POWERFUL FEATURES</div>
+      <h2>Everything You Need to <span class="gradient-text">Go Viral</span></h2>
+      <p>Our AI engine dissects every frame and pixel to give you actionable insights.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card glass-card tilt-card gsap-fade-up">
+        <div class="feature-icon" style="--color: #a855f7">
+          <i class="bi bi-cpu"></i>
+        </div>
+        <h3>AI Virality Score</h3>
+        <p>Get a precise 0–100 score predicting your content's viral potential across platforms.</p>
+      </div>
+      <div class="feature-card glass-card tilt-card gsap-fade-up" style="animation-delay:.1s">
+        <div class="feature-icon" style="--color: #3b82f6">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <h3>Hook Strength Analysis</h3>
+        <p>Analyze the critical first 3 seconds that determine if viewers stay or scroll away.</p>
+      </div>
+      <div class="feature-card glass-card tilt-card gsap-fade-up" style="animation-delay:.2s">
+        <div class="feature-icon" style="--color: #10b981">
+          <i class="bi bi-chat-left-text"></i>
+        </div>
+        <h3>Caption Generator</h3>
+        <p>Platform-optimized captions crafted by AI to maximize engagement and clicks.</p>
+      </div>
+      <div class="feature-card glass-card tilt-card gsap-fade-up" style="animation-delay:.3s">
+        <div class="feature-icon" style="--color: #f59e0b">
+          <i class="bi bi-hash"></i>
+        </div>
+        <h3>Hashtag Strategy</h3>
+        <p>Trending hashtags tailored to your content niche, platform, and target audience.</p>
+      </div>
+      <div class="feature-card glass-card tilt-card gsap-fade-up" style="animation-delay:.4s">
+        <div class="feature-icon" style="--color: #ec4899">
+          <i class="bi bi-clock"></i>
+        </div>
+        <h3>Best Posting Time</h3>
+        <p>Know exactly when to post for maximum reach based on platform-specific peak hours.</p>
+      </div>
+      <div class="feature-card glass-card tilt-card gsap-fade-up" style="animation-delay:.5s">
+        <div class="feature-icon" style="--color: #06b6d4">
+          <i class="bi bi-graph-up"></i>
+        </div>
+        <h3>Reach Estimator</h3>
+        <p>Predict your estimated reach range before you even hit publish.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platforms Section -->
+  <section class="platforms section-pad">
+    <div class="section-header">
+      <div class="section-tag">MULTI-PLATFORM</div>
+      <h2>Optimized For <span class="gradient-text">Every Platform</span></h2>
+    </div>
+    <div class="platforms-row">
+      <div class="platform-pill"><i class="bi bi-tiktok"></i> TikTok</div>
+      <div class="platform-pill"><i class="bi bi-instagram"></i> Instagram</div>
+      <div class="platform-pill"><i class="bi bi-youtube"></i> YouTube</div>
+      <div class="platform-pill"><i class="bi bi-twitter-x"></i> Twitter / X</div>
+      <div class="platform-pill"><i class="bi bi-facebook"></i> Facebook</div>
+      <div class="platform-pill"><i class="bi bi-linkedin"></i> LinkedIn</div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section section-pad">
+    <div class="cta-card glass-card">
+      <div class="cta-glow"></div>
+      <h2>Ready to Make Your Next Post <span class="gradient-text">Explode?</span></h2>
+      <p>Join 50,000+ creators who use Go Viral AI to dominate their feed.</p>
+      <a href="/auth/register" class="btn-primary btn-lg">
+        <i class="bi bi-rocket-takeoff"></i> Start For Free
+      </a>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
+
+<script src="/js/three-bg.js"></script>
+<script src="/js/landing.js"></script>

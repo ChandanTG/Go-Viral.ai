@@ -1,0 +1,77 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <aside class="sidebar glass-card admin-sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar admin-av"><i class="bi bi-shield-fill"></i></div>
+      <div><div class="sidebar-name"><%= user.name %></div><div class="sidebar-email admin-badge-sm">Administrator</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-speedometer2"></i> Overview</a>
+      <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+      <a href="/admin/content" class="sidebar-link active"><i class="bi bi-grid"></i> All Content</a>
+      <div class="sidebar-divider"></div>
+      <a href="/dashboard" class="sidebar-link"><i class="bi bi-arrow-left"></i> Back to App</a>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+
+    <div class="admin-header">
+      <div>
+        <h1><i class="bi bi-grid" style="color:#10b981"></i> All Content</h1>
+        <p><%= pagination.total %> total pieces of content</p>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <% contents.forEach(c => { %>
+        <div class="content-card glass-card">
+          <div class="content-thumb">
+            <% if (c.fileType === 'image') { %>
+              <img src="<%= c.fileUrl %>" alt="<%= c.title %>" onerror="this.src='/img/placeholder.png'">
+            <% } else { %>
+              <div class="video-thumb-ph"><i class="bi bi-play-fill"></i></div>
+            <% } %>
+            <div class="content-platform-badge"><%= c.platform %></div>
+          </div>
+          <div class="content-info">
+            <h4><%= c.title.substring(0,30) %></h4>
+            <div class="content-meta">
+              <span><i class="bi bi-person"></i> <%= c.user ? c.user.name : 'Unknown' %></span>
+              <span class="status-badge status-<%= c.analysis.status %>"><%= c.analysis.status %></span>
+            </div>
+            <% if (c.analysis.status === 'completed') { %>
+              <div class="content-score-row">
+                <span>Score</span>
+                <div class="mini-bar"><div class="mini-fill" style="width:<%= c.analysis.viralityScore %>%"></div></div>
+                <span class="score-val"><%= c.analysis.viralityScore %></span>
+              </div>
+              <span class="rating-badge rating-<%= c.analysis.overallRating.toLowerCase() %>" style="font-size:11px"><%= c.analysis.overallRating %></span>
+            <% } %>
+            <div class="tbl-email" style="margin-top:8px"><%= new Date(c.createdAt).toLocaleDateString() %></div>
+          </div>
+        </div>
+      <% }) %>
+      <% if (contents.length === 0) { %>
+        <div class="empty-state glass-card" style="grid-column:1/-1">
+          <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+          <p>No content uploaded yet</p>
+        </div>
+      <% } %>
+    </div>
+
+    <% if (pagination.totalPages > 1) { %>
+      <div class="pagination-row">
+        <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+          <a href="/admin/content?page=<%= i %>" class="page-btn <%= pagination.page === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+      </div>
+    <% } %>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>

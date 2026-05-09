@@ -1,0 +1,108 @@
+<%- include('../partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card glass-card otp-card">
+      <a href="/" class="auth-logo">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>Go<span class="logo-accent">Viral</span> AI</span>
+      </a>
+
+      <div class="otp-icon-wrap">
+        <div class="otp-pulse"></div>
+        <i class="bi bi-shield-lock-fill otp-icon"></i>
+      </div>
+
+      <h2 class="auth-title">Verify Your Identity</h2>
+      <p class="auth-subtitle">We've sent a 6-digit OTP to your email.<br>It expires in <span id="timer" class="timer-text">1:30</span></p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="form-error-box">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <p><%= error %></p>
+        </div>
+      <% } %>
+
+      <%- include('../partials/flash') %>
+
+      <form action="/auth/otp" method="POST" class="auth-form" id="otpForm">
+        <div class="otp-inputs">
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus>
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+        </div>
+        <input type="hidden" name="otp" id="otpHidden">
+        <button type="submit" class="btn-primary btn-full" id="verifyBtn" disabled>
+          <i class="bi bi-shield-check"></i> Verify OTP
+        </button>
+      </form>
+
+      <div style="text-align:center; margin-top:20px;">
+        <a href="/auth/otp/resend" class="link-accent" id="resendLink">
+          <i class="bi bi-arrow-clockwise"></i> Resend OTP
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<script src="/js/three-bg.js"></script>
+<script>
+  // OTP digit inputs
+  const digits = document.querySelectorAll('.otp-digit');
+  const hidden = document.getElementById('otpHidden');
+  const verifyBtn = document.getElementById('verifyBtn');
+
+  digits.forEach((digit, i) => {
+    digit.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '');
+      e.target.value = val;
+      if (val && i < digits.length - 1) digits[i + 1].focus();
+      updateHidden();
+    });
+    digit.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) digits[i - 1].focus();
+    });
+    digit.addEventListener('paste', (e) => {
+      const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+      if (pasted.length === 6) {
+        pasted.split('').forEach((ch, idx) => { if (digits[idx]) digits[idx].value = ch; });
+        updateHidden();
+        digits[5].focus();
+      }
+    });
+  });
+
+  function updateHidden() {
+    const code = Array.from(digits).map(d => d.value).join('');
+    hidden.value = code;
+    verifyBtn.disabled = code.length !== 6;
+    if (code.length === 6) {
+      digits.forEach(d => d.classList.add('filled'));
+    } else {
+      digits.forEach(d => d.classList.remove('filled'));
+    }
+  }
+
+  // Countdown timer – 1 minute 30 seconds
+  let seconds = 90;
+  const timerEl = document.getElementById('timer');
+  const countdown = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (seconds <= 30) timerEl.style.color = '#ef4444'; // red in last 30 sec
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      timerEl.textContent = 'Expired';
+      timerEl.style.color = '#ef4444';
+      document.getElementById('verifyBtn').disabled = true;
+    }
+  }, 1000);
+</script>

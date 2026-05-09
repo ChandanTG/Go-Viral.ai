@@ -1,0 +1,51 @@
+<!-- views/partials/navbar.ejs -->
+<nav class="navbar" id="mainNav">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon">
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
+      <span class="logo-text">Go<span class="logo-accent">Viral</span> AI</span>
+    </a>
+
+    <div class="nav-links">
+      <% if (locals.isAuthenticated && locals.currentUser) { %>
+        <% if (currentUser.role === 'admin') { %>
+          <a href="/admin/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'admin' ? 'active' : '' %>">
+            <i class="bi bi-shield-check"></i> Admin
+          </a>
+        <% } %>
+        <a href="/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+          <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+        <a href="/content/upload" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'upload' ? 'active' : '' %>">
+          <i class="bi bi-cloud-arrow-up"></i> Upload
+        </a>
+        <div class="nav-user-menu">
+          <button class="nav-user-btn">
+            <div class="nav-avatar">
+              <%= currentUser.name.charAt(0).toUpperCase() %>
+            </div>
+            <span><%= currentUser.name.split(' ')[0] %></span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown">
+            <a href="/dashboard/profile"><i class="bi bi-person"></i> Profile</a>
+            <% if (currentUser.role === 'admin') { %>
+              <a href="/admin/dashboard"><i class="bi bi-shield-check"></i> Admin Panel</a>
+            <% } %>
+            <div class="dropdown-divider"></div>
+            <a href="/auth/logout" class="dropdown-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="nav-link">Login</a>
+        <a href="/auth/register" class="btn-primary-sm">Get Started</a>
+      <% } %>
+    </div>
+
+    <button class="nav-toggle" id="navToggle">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>

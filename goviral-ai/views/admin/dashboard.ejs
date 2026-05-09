@@ -1,0 +1,179 @@
+<%- include('../partials/head') %>
+<% const activePage = 'admin'; %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar glass-card admin-sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar admin-av"><i class="bi bi-shield-fill"></i></div>
+      <div>
+        <div class="sidebar-name"><%= user.name %></div>
+        <div class="sidebar-email admin-badge-sm">Administrator</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/dashboard" class="sidebar-link active"><i class="bi bi-speedometer2"></i> Overview</a>
+      <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+      <a href="/admin/content" class="sidebar-link"><i class="bi bi-grid"></i> All Content</a>
+      <div class="sidebar-divider"></div>
+      <a href="/dashboard" class="sidebar-link"><i class="bi bi-arrow-left"></i> Back to App</a>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+
+    <div class="admin-header">
+      <div>
+        <h1><i class="bi bi-shield-check" style="color:#a855f7"></i> Admin Dashboard</h1>
+        <p>Platform analytics and user management</p>
+      </div>
+      <div class="admin-date"><i class="bi bi-calendar3"></i> <%= new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}) %></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#a855f7"><i class="bi bi-people"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.totalUsers %></div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#10b981"><i class="bi bi-person-check"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.activeUsers %></div>
+          <div class="stat-label">Active Users</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#3b82f6"><i class="bi bi-cloud-upload"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.totalContent %></div>
+          <div class="stat-label">Total Content</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#f59e0b"><i class="bi bi-cpu"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.analyzedContent %></div>
+          <div class="stat-label">Analyzed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="admin-charts-row">
+      <!-- Platform Distribution -->
+      <div class="chart-card glass-card">
+        <h3>Platform Distribution</h3>
+        <div class="platform-bars">
+          <% platformDist.forEach(p => { %>
+            <div class="platform-bar-row">
+              <span class="pb-label"><i class="bi bi-<%= p._id %>"></i> <%= p._id %></span>
+              <div class="pb-track">
+                <div class="pb-fill" style="width:<%= Math.round((p.count / stats.totalContent) * 100) || 0 %>%"></div>
+              </div>
+              <span class="pb-count"><%= p.count %></span>
+            </div>
+          <% }) %>
+          <% if (platformDist.length === 0) { %><p class="text-muted">No data yet</p><% } %>
+        </div>
+      </div>
+
+      <!-- Score Distribution -->
+      <div class="chart-card glass-card">
+        <h3>Virality Score Distribution</h3>
+        <div class="score-dist-bars">
+          <% const labels = ['0–20','20–40','40–60','60–80','80–100']; %>
+          <% scoreDist.forEach((bucket, i) => { %>
+            <% const maxCount = Math.max(...scoreDist.map(b => b.count), 1); %>
+            <div class="sdb-row">
+              <span class="sdb-label"><%= labels[i] || bucket._id %></span>
+              <div class="sdb-track">
+                <div class="sdb-fill" style="width:<%= Math.round((bucket.count / maxCount) * 100) %>%"></div>
+              </div>
+              <span class="sdb-count"><%= bucket.count %></span>
+            </div>
+          <% }) %>
+          <% if (scoreDist.length === 0) { %><p class="text-muted">No data yet</p><% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Users & Top Content -->
+    <div class="admin-two-col">
+      <!-- Recent Users -->
+      <div class="glass-card">
+        <div class="section-title-row">
+          <h3>Recent Users</h3>
+          <a href="/admin/users" class="btn-sm">View All</a>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>User</th><th>Uploads</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <% recentUsers.forEach(u => { %>
+                <tr>
+                  <td>
+                    <div class="tbl-user">
+                      <div class="tbl-avatar"><%= u.name.charAt(0) %></div>
+                      <div>
+                        <div class="tbl-name"><%= u.name %></div>
+                        <div class="tbl-email"><%= u.email %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="badge-pill"><%= u.totalUploads %></span></td>
+                  <td><span class="status-dot <%= u.isActive ? 'active' : 'inactive' %>"><%= u.isActive ? 'Active' : 'Inactive' %></span></td>
+                  <td><a href="/admin/users/<%= u._id %>" class="btn-sm"><i class="bi bi-eye"></i></a></td>
+                </tr>
+              <% }) %>
+              <% if (recentUsers.length === 0) { %>
+                <tr><td colspan="4" class="text-muted">No users yet</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Viral Content -->
+      <div class="glass-card">
+        <div class="section-title-row">
+          <h3>Top Viral Content</h3>
+          <a href="/admin/content" class="btn-sm">View All</a>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Content</th><th>Creator</th><th>Score</th></tr></thead>
+            <tbody>
+              <% topContent.forEach(c => { %>
+                <tr>
+                  <td>
+                    <div class="tbl-name"><%= c.title.substring(0,25) %><%= c.title.length>25 ? '...' : '' %></div>
+                    <div class="tbl-email"><%= c.platform %></div>
+                  </td>
+                  <td><div class="tbl-email"><%= c.user ? c.user.name : 'Unknown' %></div></td>
+                  <td>
+                    <div class="score-chip-sm">
+                      <div class="sc-bar" style="width:<%= c.analysis.viralityScore %>%"></div>
+                      <span><%= c.analysis.viralityScore %></span>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (topContent.length === 0) { %>
+                <tr><td colspan="3" class="text-muted">No analyzed content yet</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>

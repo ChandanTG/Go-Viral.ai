@@ -1,0 +1,17 @@
+<%- include('partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;text-align:center;padding:40px;">
+  <div class="glass-card" style="max-width:480px;width:100%;padding:60px 40px;">
+    <div style="font-size:6rem;font-family:'Syne',sans-serif;font-weight:800;background:linear-gradient(135deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:16px;">500</div>
+    <h2 style="margin-bottom:12px;">Server Error</h2>
+    <p style="color:var(--text2);margin-bottom:16px;">Something went wrong on our end. Please try again.</p>
+    <% if (typeof error !== 'undefined' && process && process.env && process.env.NODE_ENV === 'development') { %>
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px;margin-bottom:20px;font-size:0.82rem;color:#f87171;text-align:left;font-family:'JetBrains Mono',monospace;word-break:break-all;"><%= error %></div>
+    <% } %>
+    <a href="/" class="btn-primary"><i class="bi bi-house"></i> Back to Home</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/js/three-bg.js"></script>

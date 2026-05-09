@@ -1,0 +1,177 @@
+<%- include('../partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card glass-card">
+      <!-- Logo -->
+      <a href="/" class="auth-logo">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>Go<span class="logo-accent">Viral</span> AI</span>
+      </a>
+
+      <h2 class="auth-title">How should we send your OTP?</h2>
+      <p class="auth-subtitle">Select your preferred delivery method</p>
+
+      <%- include('../partials/flash') %>
+
+      <!-- Error messages -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="form-error-box">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <p><%= error %></p>
+        </div>
+      <% } %>
+
+      <form action="/auth/choose-otp" method="POST" class="auth-form" id="chooseOtpForm" novalidate>
+        
+        <div class="method-selector">
+          <label class="method-option">
+            <input type="radio" name="otpMethod" value="email" id="methodEmail" checked>
+            <div class="method-card">
+              <i class="bi bi-envelope"></i>
+              <span>Email (<%= user.email %>)</span>
+            </div>
+          </label>
+          
+          <label class="method-option">
+            <input type="radio" name="otpMethod" value="sms" id="methodSms">
+            <div class="method-card">
+              <i class="bi bi-phone"></i>
+              <span>SMS to Phone</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Phone input: always present in DOM and submitted, shown/hidden via display -->
+        <div class="form-group" id="phoneGroup" style="display: none;">
+          <label for="phoneNumber">Phone Number</label>
+          <div class="input-wrap">
+            <i class="bi bi-telephone input-icon"></i>
+            <input type="tel" id="phoneNumber" name="phoneNumber"
+              placeholder="+91 76762 73688"
+              value="<%= user.phoneNumber || '' %>">
+          </div>
+          <small style="color: #888; font-size: 12px; display: block; margin-top: 5px;">
+            Enter with country code, e.g. +91XXXXXXXXXX
+          </small>
+        </div>
+
+        <!-- Validation error shown by JS -->
+        <div id="phoneError" style="display:none; color:#f87171; font-size:13px; margin-top:-10px; margin-bottom:10px;">
+          <i class="bi bi-exclamation-circle"></i> Please enter a valid phone number with country code.
+        </div>
+
+        <button type="submit" class="btn-primary btn-full" id="continueBtn" style="margin-top: 20px;">
+          <span class="btn-text">Send OTP <i class="bi bi-arrow-right-circle"></i></span>
+          <span class="btn-loader hidden"><i class="bi bi-arrow-repeat spin"></i> Sending...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .method-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .method-option {
+    cursor: pointer;
+  }
+  .method-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .method-card {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  .method-card i {
+    font-size: 20px;
+    margin-right: 15px;
+    color: #888;
+  }
+  .method-option input[type="radio"]:checked + .method-card {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
+  }
+  .method-option input[type="radio"]:checked + .method-card i {
+    color: #a855f7;
+  }
+  .hidden {
+    display: none !important;
+  }
+  #phoneGroup {
+    transition: opacity 0.3s ease;
+  }
+</style>
+
+<script src="/js/three-bg.js"></script>
+<script>
+  const phoneGroup = document.getElementById('phoneGroup');
+  const phoneInput = document.getElementById('phoneNumber');
+  const phoneError = document.getElementById('phoneError');
+  const form = document.getElementById('chooseOtpForm');
+  const btnText = document.querySelector('.btn-text');
+  const btnLoader = document.querySelector('.btn-loader');
+
+  function togglePhoneInput(show) {
+    if (show) {
+      phoneGroup.style.display = 'block';
+    } else {
+      phoneGroup.style.display = 'none';
+      phoneError.style.display = 'none';
+    }
+  }
+
+  // Listen for radio changes
+  document.querySelectorAll('input[name="otpMethod"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      togglePhoneInput(e.target.value === 'sms');
+    });
+  });
+
+  // Set initial state based on which radio is checked
+  const checked = document.querySelector('input[name="otpMethod"]:checked');
+  togglePhoneInput(checked && checked.value === 'sms');
+
+  // Form submit — validate phone if SMS is selected, then show loader
+  form.addEventListener('submit', (e) => {
+    const isSms = document.getElementById('methodSms').checked;
+
+    if (isSms) {
+      // Strip spaces and dashes before validating
+      const rawPhone = phoneInput.value.trim();
+      const cleanPhone = rawPhone.replace(/[\s\-]/g, '');
+
+      // Must start with + and have at least 10 digits
+      const validPhone = /^\+[1-9]\d{7,14}$/.test(cleanPhone);
+      if (!cleanPhone || !validPhone) {
+        e.preventDefault();
+        phoneError.style.display = 'block';
+        phoneInput.focus();
+        return;
+      }
+
+      // Write back the cleaned value so the server receives it without spaces
+      phoneInput.value = cleanPhone;
+    }
+
+    phoneError.style.display = 'none';
+    // Show loading state only after validation passes
+    btnText.classList.add('hidden');
+    btnLoader.classList.remove('hidden');
+  });
+</script>

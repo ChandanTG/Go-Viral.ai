@@ -1,0 +1,132 @@
+<%- include('../partials/head') %>
+<% const activePage = 'dashboard'; %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar glass-card">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+      <div>
+        <div class="sidebar-name"><%= user.name %></div>
+        <div class="sidebar-email"><%= user.email %></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="sidebar-link active"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+      <a href="/content/upload" class="sidebar-link"><i class="bi bi-cloud-arrow-up"></i> Upload Content</a>
+      <a href="/dashboard/profile" class="sidebar-link"><i class="bi bi-person-circle"></i> Profile</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/dashboard" class="sidebar-link admin-link"><i class="bi bi-shield-check"></i> Admin Panel</a>
+      <% } %>
+      <div class="sidebar-divider"></div>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#a855f7"><i class="bi bi-cloud-upload"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.totalUploads %></div>
+          <div class="stat-label">Total Uploads</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#3b82f6"><i class="bi bi-cpu"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.analyzed %></div>
+          <div class="stat-label">Analyzed</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#10b981"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.avgScore %></div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+      </div>
+      <div class="stat-card glass-card tilt-card">
+        <div class="stat-icon" style="--c:#f59e0b"><i class="bi bi-fire"></i></div>
+        <div class="stat-info">
+          <div class="stat-value"><%= stats.totalUploads > 0 ? Math.min(99, Math.round(stats.avgScore * 1.1)) : 0 %></div>
+          <div class="stat-label">Viral Potential</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Content -->
+    <div class="section-title-row">
+      <h2>Recent Uploads</h2>
+      <a href="/content/upload" class="btn-primary-sm"><i class="bi bi-plus"></i> New Upload</a>
+    </div>
+
+    <% if (contents.length === 0) { %>
+      <div class="empty-state glass-card">
+        <div class="empty-icon"><i class="bi bi-cloud-upload"></i></div>
+        <h3>No content yet</h3>
+        <p>Upload your first piece of content to get your virality score!</p>
+        <a href="/content/upload" class="btn-primary">
+          <i class="bi bi-rocket-takeoff"></i> Upload Now
+        </a>
+      </div>
+    <% } else { %>
+      <div class="content-grid">
+        <% contents.forEach(content => { %>
+          <div class="content-card glass-card tilt-card" data-id="<%= content._id %>">
+            <div class="content-thumb">
+              <% if (content.fileType === 'image') { %>
+                <img src="<%= content.fileUrl %>" alt="<%= content.title %>" onerror="this.src='/img/placeholder.png'>">
+              <% } else { %>
+                <video src="<%= content.fileUrl %>" muted></video>
+                <div class="video-badge"><i class="bi bi-play-fill"></i> Video</div>
+              <% } %>
+              <div class="content-platform-badge"><%= content.platform %></div>
+            </div>
+            <div class="content-info">
+              <h4><%= content.title %></h4>
+              <div class="content-meta">
+                <span><i class="bi bi-calendar3"></i> <%= new Date(content.createdAt).toLocaleDateString() %></span>
+                <span class="status-badge status-<%= content.analysis.status %>"><%= content.analysis.status %></span>
+              </div>
+              <% if (content.analysis.status === 'completed') { %>
+                <div class="content-score-row">
+                  <span>Virality Score</span>
+                  <div class="mini-bar">
+                    <div class="mini-fill" style="width:<%= content.analysis.viralityScore %>%"></div>
+                  </div>
+                  <span class="score-val"><%= content.analysis.viralityScore %></span>
+                </div>
+              <% } %>
+              <div class="content-actions">
+                <a href="/content/results/<%= content._id %>" class="btn-sm"><i class="bi bi-bar-chart"></i> Results</a>
+                <button class="btn-sm btn-danger" onclick="deleteContent('<%= content._id %>', this)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>
+<script>
+async function deleteContent(id, btn) {
+  if (!confirm('Delete this content?')) return;
+  const card = btn.closest('.content-card');
+  const res = await fetch(`/content/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+  const data = await res.json();
+  if (data.success) {
+    card.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => card.remove(), 300);
+  } else { alert(data.message); }
+}
+</script>

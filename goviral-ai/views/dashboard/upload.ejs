@@ -1,0 +1,259 @@
+<%- include('../partials/head') %>
+<% const activePage = 'upload'; %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <aside class="sidebar glass-card">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+      <div>
+        <div class="sidebar-name"><%= user.name %></div>
+        <div class="sidebar-email"><%= user.email %></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="sidebar-link"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+      <a href="/content/upload" class="sidebar-link active"><i class="bi bi-cloud-arrow-up"></i> Upload Content</a>
+      <a href="/dashboard/profile" class="sidebar-link"><i class="bi bi-person-circle"></i> Profile</a>
+      <div class="sidebar-divider"></div>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+
+    <div class="page-header">
+      <h1>Upload & Analyze</h1>
+      <p>Upload your content and let AI reveal its viral potential</p>
+    </div>
+
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="form-error-box">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <% errors.forEach(e => { %><p><%= e.msg %></p><% }) %>
+      </div>
+    <% } %>
+
+    <form action="/content/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+      <div class="upload-grid">
+        <!-- Drop Zone -->
+        <div class="upload-drop-zone glass-card" id="dropZone">
+          <div class="drop-inner" id="dropInner">
+            <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+            <h3>Drag & Drop Your Content</h3>
+            <p>or <span class="link-accent" id="browseBtn">browse files</span></p>
+            <p class="drop-hint">Images & Videos up to 500MB<br>MP4, MOV, MKV, JPG, PNG, WEBP</p>
+            <input type="file" id="contentFile" name="contentFile" accept="image/*,video/*" hidden>
+          </div>
+          <!-- Preview -->
+          <div class="file-preview hidden" id="filePreview">
+            <div class="preview-media" id="previewMedia"></div>
+            <div class="preview-info" id="previewInfo"></div>
+            <button type="button" class="preview-remove" id="removeFile"><i class="bi bi-x-circle"></i></button>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="upload-progress-container hidden" id="progressContainer">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-info">
+              <span id="progressText">Uploading...</span>
+              <span id="progressPercent">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div class="upload-fields glass-card">
+          <h3>Content Details</h3>
+
+          <div class="form-group">
+            <label>Content Title</label>
+            <div class="input-wrap">
+              <i class="bi bi-type input-icon"></i>
+              <input type="text" name="title" placeholder="Give your content a catchy title..." required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description <span class="optional">(optional)</span></label>
+            <textarea name="description" rows="3" placeholder="Describe your content, target audience, or vibe..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Target Platform</label>
+            <div class="platform-selector" id="platformSelector">
+              <input type="hidden" name="platform" id="platformInput" value="instagram">
+              <div class="platform-opt active" data-val="instagram">
+                <i class="bi bi-instagram"></i><span>Instagram</span>
+              </div>
+              <div class="platform-opt" data-val="tiktok">
+                <i class="bi bi-tiktok"></i><span>TikTok</span>
+              </div>
+              <div class="platform-opt" data-val="youtube">
+                <i class="bi bi-youtube"></i><span>YouTube</span>
+              </div>
+              <div class="platform-opt" data-val="twitter">
+                <i class="bi bi-twitter-x"></i><span>Twitter</span>
+              </div>
+              <div class="platform-opt" data-val="facebook">
+                <i class="bi bi-facebook"></i><span>Facebook</span>
+              </div>
+              <div class="platform-opt" data-val="linkedin">
+                <i class="bi bi-linkedin"></i><span>LinkedIn</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full" id="submitBtn" disabled>
+            <span class="btn-text"><i class="bi bi-cpu"></i> Analyze Virality</span>
+            <span class="btn-loader hidden">
+              <i class="bi bi-arrow-repeat spin"></i> Uploading & Analyzing...
+            </span>
+          </button>
+
+          <div class="upload-note">
+            <i class="bi bi-shield-check"></i>
+            <span>Your content is analyzed privately and never shared.</span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('contentFile');
+const browseBtn = document.getElementById('browseBtn');
+const dropInner = document.getElementById('dropInner');
+const filePreview = document.getElementById('filePreview');
+const previewMedia = document.getElementById('previewMedia');
+const previewInfo = document.getElementById('previewInfo');
+const removeFile = document.getElementById('removeFile');
+const submitBtn = document.getElementById('submitBtn');
+const platformOpts = document.querySelectorAll('.platform-opt');
+const platformInput = document.getElementById('platformInput');
+
+browseBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) showPreview(e.target.files[0]);
+});
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+    showPreview(file);
+  }
+});
+
+function showPreview(file) {
+  const url = URL.createObjectURL(file);
+  const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+  previewMedia.innerHTML = file.type.startsWith('video/')
+    ? `<video src="${url}" controls class="preview-video"></video>`
+    : `<img src="${url}" class="preview-img" alt="preview">`;
+  previewInfo.innerHTML = `<strong>${file.name}</strong><br><span>${sizeMB} MB · ${file.type}</span>`;
+  dropInner.classList.add('hidden');
+  filePreview.classList.remove('hidden');
+  submitBtn.disabled = false;
+}
+
+removeFile.addEventListener('click', () => {
+  fileInput.value = '';
+  previewMedia.innerHTML = '';
+  filePreview.classList.add('hidden');
+  dropInner.classList.remove('hidden');
+  submitBtn.disabled = true;
+});
+
+platformOpts.forEach(opt => {
+  opt.addEventListener('click', () => {
+    platformOpts.forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    platformInput.value = opt.dataset.val;
+  });
+});
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const form = this;
+  const formData = new FormData(form);
+  const xhr = new XMLHttpRequest();
+  
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
+  const progressPercent = document.getElementById('progressPercent');
+  const progressText = document.getElementById('progressText');
+  
+  // Show progress
+  progressContainer.classList.remove('hidden');
+  document.querySelector('.btn-text').classList.add('hidden');
+  document.querySelector('.btn-loader').classList.remove('hidden');
+  submitBtn.disabled = true;
+  
+  xhr.upload.addEventListener('progress', function(e) {
+    if (e.lengthComputable) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      progressBar.style.width = percent + '%';
+      progressPercent.textContent = percent + '%';
+      if (percent === 100) {
+        progressText.textContent = 'Processing on server...';
+      }
+    }
+  });
+  
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      console.log('Upload finished with status:', xhr.status, xhr.responseText);
+      
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+          } else {
+            alert('Upload failed: ' + (data.message || 'Unknown error'));
+            submitBtn.disabled = false;
+            document.querySelector('.btn-text').classList.remove('hidden');
+            document.querySelector('.btn-loader').classList.add('hidden');
+            progressContainer.classList.add('hidden');
+          }
+        } catch(e) {
+          // Response wasn't JSON, try redirect
+          window.location.href = xhr.responseURL || '/dashboard';
+        }
+      } else {
+        let msg = 'Upload failed (' + xhr.status + ')';
+        try { msg = JSON.parse(xhr.responseText).message || msg; } catch(e) {}
+        alert(msg);
+        submitBtn.disabled = false;
+        document.querySelector('.btn-text').classList.remove('hidden');
+        document.querySelector('.btn-loader').classList.add('hidden');
+        progressContainer.classList.add('hidden');
+      }
+    }
+  };
+  
+  xhr.open('POST', form.action, true);
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.send(formData);
+});
+</script>

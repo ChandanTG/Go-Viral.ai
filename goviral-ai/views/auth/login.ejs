@@ -1,0 +1,83 @@
+<%- include('../partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card glass-card">
+      <!-- Logo -->
+      <a href="/" class="auth-logo">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>Go<span class="logo-accent">Viral</span> AI</span>
+      </a>
+
+      <h2 class="auth-title">Welcome Back</h2>
+      <p class="auth-subtitle">Sign in to your creator dashboard</p>
+
+      <%- include('../partials/flash') %>
+
+      <!-- Error messages -->
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="form-error-box">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <% errors.forEach(e => { %><p><%= e.msg %></p><% }) %>
+        </div>
+      <% } %>
+
+      <form action="/auth/login" method="POST" class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <i class="bi bi-envelope input-icon"></i>
+            <input type="email" id="email" name="email" placeholder="you@example.com"
+              value="<%= typeof formData !== 'undefined' ? formData.email || '' : '' %>" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock input-icon"></i>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <button type="button" class="input-toggle-pw" onclick="togglePw(this)">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-full" id="loginBtn">
+          <span class="btn-text"><i class="bi bi-arrow-right-circle"></i> Sign In</span>
+          <span class="btn-loader hidden"><i class="bi bi-arrow-repeat spin"></i> Verifying...</span>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>Or continue with</span></div>
+      
+      <div class="social-login-grid">
+        <a href="/auth/google" class="btn-social google">
+          <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google">
+          <span>Google</span>
+        </a>
+        <a href="/auth/apple" class="btn-social apple">
+          <i class="bi bi-apple"></i>
+          <span>Apple</span>
+        </a>
+      </div>
+
+      <div class="auth-divider"><span>New to Go Viral AI?</span></div>
+      <a href="/auth/register" class="btn-ghost btn-full">Create Free Account</a>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<script src="/js/three-bg.js"></script>
+<script>
+  function togglePw(btn) {
+    const inp = btn.previousElementSibling;
+    const icon = btn.querySelector('i');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+  }
+  document.getElementById('loginForm').addEventListener('submit', () => {
+    document.querySelector('.btn-text').classList.add('hidden');
+    document.querySelector('.btn-loader').classList.remove('hidden');
+  });
+</script>

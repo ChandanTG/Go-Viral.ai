@@ -1,0 +1,122 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <aside class="sidebar glass-card admin-sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar admin-av"><i class="bi bi-shield-fill"></i></div>
+      <div><div class="sidebar-name"><%= user.name %></div><div class="sidebar-email admin-badge-sm">Administrator</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-speedometer2"></i> Overview</a>
+      <a href="/admin/users" class="sidebar-link active"><i class="bi bi-people"></i> Users</a>
+      <a href="/admin/content" class="sidebar-link"><i class="bi bi-grid"></i> All Content</a>
+      <div class="sidebar-divider"></div>
+      <a href="/dashboard" class="sidebar-link"><i class="bi bi-arrow-left"></i> Back to App</a>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+
+    <div class="admin-header">
+      <div>
+        <h1><i class="bi bi-people" style="color:#3b82f6"></i> User Management</h1>
+        <p><%= pagination.total %> total users</p>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="admin-search-bar glass-card">
+      <form action="/admin/users" method="GET" class="search-form">
+        <div class="input-wrap">
+          <i class="bi bi-search input-icon"></i>
+          <input type="text" name="search" value="<%= search %>" placeholder="Search by name or email...">
+        </div>
+        <button type="submit" class="btn-primary-sm"><i class="bi bi-search"></i> Search</button>
+        <% if (search) { %><a href="/admin/users" class="btn-ghost-sm">Clear</a><% } %>
+      </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="glass-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table admin-table-full">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Uploads</th>
+              <th>Last Login</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+              <tr id="user-row-<%= u._id %>">
+                <td>
+                  <div class="tbl-user">
+                    <div class="tbl-avatar"><%= u.name.charAt(0).toUpperCase() %></div>
+                    <div>
+                      <div class="tbl-name"><%= u.name %></div>
+                      <div class="tbl-email"><%= u.email %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="role-badge role-<%= u.role %>"><%= u.role %></span></td>
+                <td><span class="badge-pill"><%= u.totalUploads %></span></td>
+                <td class="tbl-email"><%= u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never' %></td>
+                <td class="tbl-email"><%= new Date(u.createdAt).toLocaleDateString() %></td>
+                <td>
+                  <span class="status-dot <%= u.isActive ? 'active' : 'inactive' %>" id="status-<%= u._id %>">
+                    <%= u.isActive ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <a href="/admin/users/<%= u._id %>" class="btn-sm" title="View Details"><i class="bi bi-eye"></i></a>
+                    <button class="btn-sm btn-warning" title="Toggle Status"
+                      onclick="toggleStatus('<%= u._id %>')"><i class="bi bi-toggle-on"></i></button>
+                    <form action="/admin/users/<%= u._id %>/delete?_method=POST" method="POST" style="display:inline"
+                      onsubmit="return confirm('Delete this user and all their content?')">
+                      <button type="submit" class="btn-sm btn-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (users.length === 0) { %>
+              <tr><td colspan="7" class="text-muted text-center">No users found</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if (pagination.totalPages > 1) { %>
+        <div class="pagination-row">
+          <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+            <a href="/admin/users?page=<%= i %><%= search ? '&search='+search : '' %>"
+               class="page-btn <%= pagination.page === i ? 'active' : '' %>"><%= i %></a>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>
+<script>
+async function toggleStatus(id) {
+  const res = await fetch(`/admin/users/${id}/toggle`, { method: 'POST', headers: {'Content-Type':'application/json'} });
+  const data = await res.json();
+  if (data.success) {
+    const el = document.getElementById(`status-${id}`);
+    el.className = `status-dot ${data.isActive ? 'active' : 'inactive'}`;
+    el.textContent = data.isActive ? 'Active' : 'Inactive';
+  }
+}
+</script>

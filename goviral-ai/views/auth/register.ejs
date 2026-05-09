@@ -1,0 +1,134 @@
+<%- include('../partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card glass-card">
+      <a href="/" class="auth-logo">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>Go<span class="logo-accent">Viral</span> AI</span>
+      </a>
+
+      <h2 class="auth-title">Create Account</h2>
+      <p class="auth-subtitle">Join 50,000+ creators going viral</p>
+
+      <%- include('../partials/flash') %>
+
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="form-error-box">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <% errors.forEach(e => { %><p><%= e.msg %></p><% }) %>
+        </div>
+      <% } %>
+
+      <form action="/auth/register" method="POST" class="auth-form" id="regForm" novalidate>
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <div class="input-wrap">
+            <i class="bi bi-person input-icon"></i>
+            <input type="text" id="name" name="name" placeholder="Your full name"
+              value="<%= typeof formData !== 'undefined' ? formData.name || '' : '' %>" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <i class="bi bi-envelope input-icon"></i>
+            <input type="email" id="email" name="email" placeholder="you@example.com"
+              value="<%= typeof formData !== 'undefined' ? formData.email || '' : '' %>" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock input-icon"></i>
+            <input type="password" id="password" name="password" placeholder="Min 6 characters" required>
+            <button type="button" class="input-toggle-pw" onclick="togglePw(this)"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-shield-lock input-icon"></i>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" required>
+            <button type="button" class="input-toggle-pw" onclick="togglePw(this)"><i class="bi bi-eye"></i></button>
+          </div>
+          <!-- Live match hint -->
+          <small id="pwMatchHint" style="font-size:12px; margin-top:5px; display:none;"></small>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">I agree to the <a href="#" class="link-accent">Terms of Service</a></label>
+        </div>
+        <button type="submit" class="btn-primary btn-full" id="submitBtn">
+          <i class="bi bi-rocket-takeoff"></i> Create My Account
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>Or join with</span></div>
+      
+      <div class="social-login-grid">
+        <a href="/auth/google" class="btn-social google">
+          <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google">
+          <span>Google</span>
+        </a>
+        <a href="/auth/apple" class="btn-social apple">
+          <i class="bi bi-apple"></i>
+          <span>Apple</span>
+        </a>
+      </div>
+
+      <div class="auth-divider"><span>Already have an account?</span></div>
+      <a href="/auth/login" class="btn-ghost btn-full">Sign In Instead</a>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<script src="/js/three-bg.js"></script>
+<script>
+  function togglePw(btn) {
+    const inp = btn.previousElementSibling;
+    const icon = btn.querySelector('i');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    icon.className = inp.type === 'text' ? 'bi bi-eye-slash' : 'bi bi-eye';
+  }
+
+  const pwInput = document.getElementById('password');
+  const confirmInput = document.getElementById('confirmPassword');
+  const pwMatchHint = document.getElementById('pwMatchHint');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function checkPasswordMatch() {
+    const pw = pwInput.value;
+    const confirm = confirmInput.value;
+
+    if (confirm.length === 0) {
+      pwMatchHint.style.display = 'none';
+      return;
+    }
+
+    pwMatchHint.style.display = 'block';
+    if (pw === confirm) {
+      pwMatchHint.textContent = '✅ Passwords match';
+      pwMatchHint.style.color = '#22c55e';
+    } else {
+      pwMatchHint.textContent = '❌ Passwords do not match';
+      pwMatchHint.style.color = '#f87171';
+    }
+  }
+
+  pwInput.addEventListener('input', checkPasswordMatch);
+  confirmInput.addEventListener('input', checkPasswordMatch);
+
+  // Block form submission if passwords don't match
+  document.getElementById('regForm').addEventListener('submit', (e) => {
+    if (pwInput.value !== confirmInput.value) {
+      e.preventDefault();
+      pwMatchHint.style.display = 'block';
+      pwMatchHint.textContent = '❌ Passwords do not match';
+      pwMatchHint.style.color = '#f87171';
+      confirmInput.focus();
+    }
+  });
+</script>

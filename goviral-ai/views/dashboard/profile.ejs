@@ -1,0 +1,127 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<div class="app-layout">
+  <aside class="sidebar glass-card">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+      <div><div class="sidebar-name"><%= user.name %></div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="sidebar-link"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+      <a href="/content/upload" class="sidebar-link"><i class="bi bi-cloud-arrow-up"></i> Upload</a>
+      <a href="/dashboard/profile" class="sidebar-link active"><i class="bi bi-person-circle"></i> Profile</a>
+      <div class="sidebar-divider"></div>
+      <a href="/auth/logout" class="sidebar-link logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+    <div class="page-header">
+      <h1>My Profile</h1>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-card glass-card">
+        <div class="profile-avatar-lg"><%= user.name.charAt(0).toUpperCase() %></div>
+        <h2><%= user.name %></h2>
+        <p class="profile-email"><%= user.email %></p>
+        <div class="profile-badge"><%= user.role %></div>
+        <div class="profile-joined">Member since <%= new Date(user.createdAt).toLocaleDateString('en-US', {month:'long', year:'numeric'}) %></div>
+      </div>
+
+      <div class="profile-edit-card glass-card">
+        <h3>Edit Profile</h3>
+        <form action="/dashboard/profile" method="POST" class="auth-form">
+          <div class="form-group">
+            <label>Full Name</label>
+            <div class="input-wrap">
+              <i class="bi bi-person input-icon"></i>
+              <input type="text" name="name" value="<%= user.name %>" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope input-icon"></i>
+              <input type="email" value="<%= user.email %>" disabled>
+            </div>
+          </div>
+          
+          <h4 class="mt-4 mb-3">Meta API Integration (Optional)</h4>
+          <p class="text-muted small mb-3">Configure your Meta (Facebook/Instagram) credentials to publish directly from the platform.</p>
+          
+          <div class="form-group">
+            <label>Meta Access Token</label>
+            <div class="input-wrap">
+              <i class="bi bi-key input-icon"></i>
+              <input type="text" name="metaAccessToken" placeholder="EAAB..." value="<%= user.metaAccessToken || '' %>">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Instagram User ID</label>
+            <div class="input-wrap">
+              <i class="bi bi-instagram input-icon"></i>
+              <input type="text" name="metaInstagramUserId" placeholder="178414..." value="<%= user.metaInstagramUserId || '' %>">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Facebook Page ID</label>
+            <div class="input-wrap">
+              <i class="bi bi-facebook input-icon"></i>
+              <input type="text" name="metaFacebookPageId" placeholder="1042..." value="<%= user.metaFacebookPageId || '' %>">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary mt-3"><i class="bi bi-check-lg"></i> Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="section-title-row mt-4">
+      <h2>Content History</h2>
+      <span class="badge-count"><%= contents.length %> items</span>
+    </div>
+
+    <% if (contents.length === 0) { %>
+      <div class="empty-state glass-card">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <p>No uploads yet. <a href="/content/upload" class="link-accent">Upload now →</a></p>
+      </div>
+    <% } else { %>
+      <div class="history-list glass-card">
+        <% contents.forEach(c => { %>
+          <div class="history-row">
+            <div class="history-thumb">
+              <% if (c.fileType === 'image') { %>
+                <img src="<%= c.fileUrl %>" onerror="this.src='/img/placeholder.png'">
+              <% } else { %>
+                <div class="video-thumb-ph"><i class="bi bi-play-fill"></i></div>
+              <% } %>
+            </div>
+            <div class="history-info">
+              <strong><%= c.title %></strong>
+              <span><i class="bi bi-<%= c.platform %>"></i> <%= c.platform %> · <%= new Date(c.createdAt).toLocaleDateString() %></span>
+            </div>
+            <div class="history-score">
+              <% if (c.analysis.status === 'completed') { %>
+                <span class="score-chip"><%= c.analysis.viralityScore %>/100</span>
+                <span class="rating-tiny rating-<%= c.analysis.overallRating.toLowerCase() %>"><%= c.analysis.overallRating %></span>
+              <% } else { %>
+                <span class="status-badge status-<%= c.analysis.status %>"><%= c.analysis.status %></span>
+              <% } %>
+            </div>
+            <div class="history-actions">
+              <a href="/content/results/<%= c._id %>" class="btn-sm"><i class="bi bi-bar-chart"></i></a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>

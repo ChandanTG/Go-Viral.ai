@@ -1,0 +1,15 @@
+<!-- views/partials/flash.ejs -->
+<% if (locals.success && success.length > 0) { %>
+  <div class="flash flash-success" id="flashMsg">
+    <i class="bi bi-check-circle-fill"></i>
+    <span><%= success[0] %></span>
+    <button class="flash-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+  </div>
+<% } %>
+<% if (locals.error && error.length > 0) { %>
+  <div class="flash flash-error" id="flashMsg">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span><%= error[0] %></span>
+    <button class="flash-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+  </div>
+<% } %>

@@ -1,0 +1,14 @@
+<%- include('partials/head') %>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;text-align:center;padding:40px;">
+  <div class="glass-card" style="max-width:480px;width:100%;padding:60px 40px;">
+    <div style="font-size:6rem;font-family:'Syne',sans-serif;font-weight:800;background:linear-gradient(135deg,#a855f7,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:16px;">404</div>
+    <h2 style="margin-bottom:12px;">Page Not Found</h2>
+    <p style="color:var(--text2);margin-bottom:28px;">The page you're looking for doesn't exist or has been moved.</p>
+    <a href="/" class="btn-primary"><i class="bi bi-house"></i> Back to Home</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/js/three-bg.js"></script>

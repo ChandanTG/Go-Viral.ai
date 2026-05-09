@@ -1,0 +1,557 @@
+<% const analysis=content.analysis || { status: '' , overallRating: 'Average' , viralityScore: 0, hookStrength: 0,
+  engagementPotential: 0, trendAlignment: 0, emotionalImpact: 0, estimatedReach: 'N/A' , bestPostingTime: 'N/A' ,
+  strengths: [], improvements: [], captionSuggestions: [], hashtags: [] }; %>
+
+  <%- include('../partials/head') %>
+    <%- include('../partials/navbar') %>
+
+      <div class="app-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar glass-card">
+          <div class="sidebar-user">
+            <div class="sidebar-avatar">
+              <%= user?.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+            </div>
+
+            <div>
+              <div class="sidebar-name">
+                <%= user?.name || 'User' %>
+              </div>
+            </div>
+          </div>
+
+          <nav class="sidebar-nav">
+            <a href="/dashboard" class="sidebar-link">
+              <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+
+            <a href="/content/upload" class="sidebar-link">
+              <i class="bi bi-cloud-arrow-up"></i> Upload
+            </a>
+
+            <a href="/dashboard/profile" class="sidebar-link">
+              <i class="bi bi-person-circle"></i> Profile
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <a href="/auth/logout" class="sidebar-link logout-link">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </nav>
+        </aside>
+
+        <!-- Main -->
+        <main class="app-main" id="resultsMain">
+
+          <!-- PROCESSING -->
+          <% if (analysis.status==='processing' || analysis.status==='pending' ) { %>
+
+            <div class="processing-state glass-card" id="processingState">
+
+              <div class="processing-animation">
+                <div class="proc-ring"></div>
+                <i class="bi bi-cpu proc-icon"></i>
+              </div>
+
+              <h2>AI Analyzing Your Content...</h2>
+
+              <p>Our neural network is dissecting every pixel and frame.</p>
+
+              <div class="proc-steps">
+
+                <div class="proc-step active" id="step1">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Content uploaded
+                </div>
+
+                <div class="proc-step" id="step2">
+                  <i class="bi bi-arrow-repeat spin"></i>
+                  Running AI analysis
+                </div>
+
+                <div class="proc-step" id="step3">
+                  <i class="bi bi-hourglass-split"></i>
+                  Generating insights
+                </div>
+
+              </div>
+            </div>
+
+            <script>
+              function pollResults() {
+
+                fetch('/content/status/<%= content._id %>')
+                  .then(r => r.json())
+                  .then(data => {
+
+                    if (data.status === 'completed') {
+
+                      document.getElementById('step2').className = 'proc-step active';
+
+                      document.getElementById('step2').innerHTML =
+                        '<i class="bi bi-check-circle-fill"></i> Analysis complete';
+
+                      setTimeout(() => location.reload(), 1000);
+
+                    } else {
+
+                      setTimeout(pollResults, 2000);
+
+                    }
+
+                  })
+                  .catch(err => console.error(err));
+              }
+
+              setTimeout(pollResults, 2000);
+
+              setTimeout(() => {
+                const step2 = document.getElementById('step2');
+
+                if (step2) {
+                  step2.classList.add('active');
+                }
+              }, 1500);
+            </script>
+
+            <% } else { %>
+
+              <!-- RESULTS -->
+              <div class="results-header">
+
+                <div>
+                  <h1>Analysis Results</h1>
+
+                  <p>
+                    <%= content?.title || 'Untitled' %> ·
+                      <i class="bi bi-<%= content?.platform || 'globe' %>"></i>
+                      <%= content?.platform || 'Platform' %>
+                  </p>
+                </div>
+
+                <a href="/content/upload" class="btn-primary-sm">
+                  <i class="bi bi-plus"></i>
+                  Analyze Another
+                </a>
+
+              </div>
+
+              <div class="results-grid">
+
+                <!-- MAIN SCORE -->
+                <div class="main-score-card glass-card tilt-card">
+
+                  <div class="rating-badge rating-<%= analysis.overallRating.toLowerCase() %>">
+                    <%= analysis.overallRating %>
+                  </div>
+
+                  <div class="score-ring-wrap">
+
+                    <svg viewBox="0 0 200 200" class="big-ring">
+
+                      <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12" />
+
+                      <circle cx="100" cy="100" r="85" fill="none" stroke="url(#grad1)" stroke-width="12"
+                        stroke-linecap="round" stroke-dasharray="534"
+                        stroke-dashoffset="<%= Math.round(534 - (534 * analysis.viralityScore / 100)) %>"
+                        transform="rotate(-90 100 100)" class="score-arc" id="mainArc"
+                        data-score="<%= analysis.viralityScore %>" />
+
+                      <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#a855f7" />
+                          <stop offset="100%" style="stop-color:#3b82f6" />
+                        </linearGradient>
+                      </defs>
+
+                    </svg>
+
+                    <div class="big-score-num" id="mainScore">0</div>
+
+                    <div class="big-score-label">
+                      Virality Score
+                    </div>
+
+                  </div>
+
+                  <!-- METRICS -->
+                  <div class="score-metrics-grid">
+
+                    <div class="sm-metric">
+                      <div class="sm-label">Hook Strength</div>
+
+                      <div class="sm-bar">
+                        <div class="sm-fill" data-w="<%= analysis.hookStrength %>" style="width:0">
+                        </div>
+                      </div>
+
+                      <div class="sm-val">
+                        <%= analysis.hookStrength %>
+                      </div>
+                    </div>
+
+                    <div class="sm-metric">
+                      <div class="sm-label">Engagement</div>
+
+                      <div class="sm-bar">
+                        <div class="sm-fill" data-w="<%= analysis.engagementPotential %>" style="width:0">
+                        </div>
+                      </div>
+
+                      <div class="sm-val">
+                        <%= analysis.engagementPotential %>
+                      </div>
+                    </div>
+
+                    <div class="sm-metric">
+                      <div class="sm-label">Trend Align</div>
+
+                      <div class="sm-bar">
+                        <div class="sm-fill" data-w="<%= analysis.trendAlignment %>" style="width:0">
+                        </div>
+                      </div>
+
+                      <div class="sm-val">
+                        <%= analysis.trendAlignment %>
+                      </div>
+                    </div>
+
+                    <div class="sm-metric">
+                      <div class="sm-label">Emotional Impact</div>
+
+                      <div class="sm-bar">
+                        <div class="sm-fill" data-w="<%= analysis.emotionalImpact %>" style="width:0">
+                        </div>
+                      </div>
+
+                      <div class="sm-val">
+                        <%= analysis.emotionalImpact %>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- REACH -->
+                  <div class="reach-banner">
+
+                    <i class="bi bi-people"></i>
+
+                    <div>
+                      <span class="reach-label">Estimated Reach</span>
+
+                      <span class="reach-val">
+                        <%= analysis.estimatedReach %>
+                      </span>
+                    </div>
+
+                    <div>
+                      <span class="reach-label">Best Post Time</span>
+
+                      <span class="reach-val">
+                        <%= analysis.bestPostingTime %>
+                      </span>
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <!-- RIGHT SIDE -->
+                <div class="results-right">
+
+                  <!-- STRENGTHS -->
+                  <div class="result-section glass-card">
+
+                    <h3>
+                      <i class="bi bi-stars" style="color:#f59e0b"></i>
+                      Strengths
+                    </h3>
+
+                    <ul class="result-list">
+
+                      <% analysis.strengths.forEach(s=> { %>
+
+                        <li>
+                          <%= s %>
+                        </li>
+
+                        <% }) %>
+
+                    </ul>
+
+                  </div>
+
+                  <!-- IMPROVEMENTS -->
+                  <div class="result-section glass-card">
+
+                    <h3>
+                      <i class="bi bi-lightbulb" style="color:#3b82f6"></i>
+                      Improvements
+                    </h3>
+
+                    <ul class="result-list improvements">
+
+                      <% analysis.improvements.forEach(imp=> { %>
+
+                        <li>
+                          <i class="bi bi-arrow-right-short"></i>
+                          <%= imp %>
+                        </li>
+
+                        <% }) %>
+
+                    </ul>
+
+                  </div>
+
+                  <!-- PROFILE LINK SETUP -->
+                  <div class="result-section glass-card mb-4">
+                    <h3>
+                      <i class="bi bi-link-45deg" style="color:#a855f7"></i>
+                      Social Media Profile Link
+                    </h3>
+                    <p class="publish-copy mb-3">Add your target social media profile link.</p>
+                    <form id="profileLinkForm" class="auth-form" onsubmit="saveProfileLink(event, '<%= content._id %>')">
+                      <div class="form-group mb-3">
+                        <div class="input-wrap">
+                          <i class="bi bi-globe input-icon"></i>
+                          <input type="url" id="profileLinkInput" name="profileLink" placeholder="https://instagram.com/yourprofile" value="<%= content.profileLink || '' %>" required>
+                        </div>
+                      </div>
+                      <button type="submit" class="btn-primary-sm" id="saveLinkBtn">
+                        <i class="bi bi-save"></i> Save Link
+                      </button>
+                      <div id="linkStatus" class="mt-2" hidden></div>
+                    </form>
+                  </div>
+
+                  <!-- PUBLISH -->
+                  <div class="publish-card glass-card" id="publishCard">
+
+                    <h3>
+                      <i class="bi bi-send-check" style="color:#10b981"></i>
+                      Publish to <%= content.platform %>
+                    </h3>
+
+                    <p class="publish-copy">
+                      Use the analyzed caption and hashtags to post this <%= content.fileType %> directly to the selected platform. Make sure your <a href="/dashboard/profile" class="link-accent">Meta API Keys</a> are set up.
+                    </p>
+
+                    <% if (content.postStatus === 'posted' && content.postUrl) { %>
+                      <a href="<%= content.postUrl %>" target="_blank" rel="noopener" class="platform-verify-badge">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Published
+                      </a>
+                    <% } else if (content.postStatus === 'failed' && content.postError) { %>
+                      <div class="publish-alert error" id="publishStatus">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span><%= content.postError %></span>
+                      </div>
+                    <% } else { %>
+                      <div class="publish-alert" id="publishStatus" hidden></div>
+                    <% } %>
+
+                    <button
+                      type="button"
+                      class="btn-primary-sm publish-btn"
+                      id="publishBtn"
+                      onclick="publishContent('<%= content._id %>')"
+                      <%= content.postStatus === 'posting' ? 'disabled' : '' %>>
+                      <i class="bi bi-send"></i>
+                      <span><%= content.postStatus === 'posting' ? 'Publishing...' : content.postStatus === 'failed' ? 'Retry Publish' : 'Publish Now' %></span>
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <% } %>
+
+        </main>
+      </div>
+
+      <%- include('../partials/footer') %>
+
+        <script>
+
+          window.addEventListener('load', () => {
+
+            const scoreEl = document.getElementById('mainScore');
+
+            const target = parseInt('<%= analysis.viralityScore %>') || 0;
+
+            if (!scoreEl) return;
+
+            let current = 0;
+
+            const step = target / 60;
+
+            const timer = setInterval(() => {
+
+              current = Math.min(current + step, target);
+
+              scoreEl.textContent = Math.round(current);
+
+              if (current >= target) {
+                clearInterval(timer);
+              }
+
+            }, 16);
+
+            document.querySelectorAll('.sm-fill').forEach(bar => {
+
+              const w = bar.dataset.w || 0;
+
+              setTimeout(() => {
+                bar.style.width = w + '%';
+              }, 300);
+
+            });
+
+          });
+
+          function copyText(el, text) {
+
+            navigator.clipboard.writeText(text).then(() => {
+
+              const original = el.innerHTML;
+
+              el.innerHTML =
+                '<i class="bi bi-check-lg"></i> Copied!';
+
+              el.style.color = '#10b981';
+
+              setTimeout(() => {
+
+                el.innerHTML = original;
+
+                el.style.color = '';
+
+              }, 2000);
+
+            });
+
+          }
+
+          async function saveProfileLink(e, id) {
+            e.preventDefault();
+            const btn = document.getElementById('saveLinkBtn');
+            const input = document.getElementById('profileLinkInput');
+            const status = document.getElementById('linkStatus');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Saving...';
+            
+            try {
+              const res = await fetch(`/post/save-link/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ profileLink: input.value })
+              });
+              const data = await res.json();
+              
+              status.hidden = false;
+              if (data.success) {
+                status.innerHTML = `<span style="color:#10b981"><i class="bi bi-check-circle"></i> ${data.message}</span>`;
+              } else {
+                status.innerHTML = `<span style="color:#ef4444"><i class="bi bi-exclamation-triangle"></i> ${data.message}</span>`;
+              }
+            } catch (err) {
+              status.hidden = false;
+              status.innerHTML = `<span style="color:#ef4444"><i class="bi bi-exclamation-triangle"></i> Failed to save link.</span>`;
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+
+          async function publishContent(id) {
+
+            const btn = document.getElementById('publishBtn');
+            const status = document.getElementById('publishStatus');
+            const original = btn ? btn.innerHTML : '';
+
+            if (btn) {
+              btn.disabled = true;
+              btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i><span>Publishing...</span>';
+            }
+
+            if (status) {
+              status.hidden = false;
+              setPublishStatus(status, 'publish-alert', 'bi bi-cloud-upload', 'Connecting to platform gateway...');
+            }
+
+            try {
+              const response = await fetch(`/post/publish/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+              });
+              const data = await response.json();
+
+              if (!response.ok || !data.success) {
+                throw new Error(data.error || data.message || 'Publish failed.');
+              }
+
+              if (status) {
+                setPublishStatus(status, 'publish-alert success', 'bi bi-check-circle', data.message || 'Published successfully.', data.postUrl);
+              }
+
+              if (btn) {
+                btn.innerHTML = '<i class="bi bi-check-lg"></i><span>Published</span>';
+              }
+            } catch (err) {
+              if (status) {
+                setPublishStatus(status, 'publish-alert error', 'bi bi-exclamation-triangle', err.message);
+              }
+
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = original || '<i class="bi bi-send"></i><span>Retry Publish</span>';
+              }
+            }
+
+          }
+
+          function setPublishStatus(status, className, iconClass, message, postUrl) {
+
+            status.className = className;
+            status.replaceChildren();
+
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+
+            const text = document.createElement('span');
+            text.textContent = message;
+
+            if (postUrl) {
+              text.appendChild(document.createTextNode(' '));
+
+              const link = document.createElement('a');
+              link.href = postUrl;
+              link.target = '_blank';
+              link.rel = 'noopener';
+              link.textContent = 'Open post';
+              text.appendChild(link);
+            }
+
+            status.append(icon, text);
+
+          }
+
+          function copyAllHashtags() {
+
+            const tags = Array
+              .from(document.querySelectorAll('.hashtag-pill'))
+              .map(t => t.textContent)
+              .join(' ');
+
+            navigator.clipboard.writeText(tags);
+
+          }
+
+        </script>
