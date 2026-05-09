@@ -80,11 +80,11 @@ async function attemptPublish(content, req) {
   try {
     switch (platform) {
       case 'instagram':
-        if (!hasMetaKeys) return mockSuccess(platform);
+        if (!hasMetaKeys) return missingConfig('META_ACCESS_TOKEN');
         return await publishToInstagram(content, req, user);
 
       case 'facebook':
-        if (!hasMetaKeys) return mockSuccess(platform);
+        if (!hasMetaKeys) return missingConfig('META_ACCESS_TOKEN');
         return await publishToFacebook(content, req, user);
 
       case 'twitter':
@@ -112,7 +112,7 @@ async function publishToInstagram(content, req, user) {
   const instaUserId = user.metaInstagramUserId || process.env.META_INSTAGRAM_USER_ID;
   const accessToken = user.metaAccessToken || process.env.META_ACCESS_TOKEN;
 
-  if (!instaUserId) return mockSuccess('instagram');
+  if (!instaUserId) return missingConfig('META_INSTAGRAM_USER_ID');
 
   const mediaUrl = getPublicMediaUrl(content, req);
   const urlError = validatePublicMediaUrl(mediaUrl);
@@ -171,7 +171,7 @@ async function publishToFacebook(content, req, user) {
   const pageId = user.metaFacebookPageId || process.env.META_PAGE_ID;
   const accessToken = user.metaAccessToken || process.env.META_ACCESS_TOKEN;
 
-  if (!pageId) return mockSuccess('facebook');
+  if (!pageId) return missingConfig('META_PAGE_ID');
 
   const mediaUrl = getPublicMediaUrl(content, req);
   const urlError = validatePublicMediaUrl(mediaUrl);
@@ -262,7 +262,13 @@ function validatePublicMediaUrl(mediaUrl) {
   try {
     const parsed = new URL(mediaUrl);
     const host = parsed.hostname.toLowerCase();
-    // Allow it to proceed so user can test or get an actual Meta API error
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.local');
+    if (parsed.protocol !== 'https:' || isLocalHost) {
+      return {
+        success: false,
+        error: 'Meta needs a public HTTPS media URL. Set PUBLIC_BASE_URL to your live HTTPS domain or use Cloudinary uploads.',
+      };
+    }
     return null;
   } catch (err) {
     return { success: false, error: 'Unable to build a valid public media URL for Meta publishing.' };
